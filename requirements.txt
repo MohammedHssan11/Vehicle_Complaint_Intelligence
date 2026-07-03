@@ -1,0 +1,38 @@
+pandas==2.3.3
+numpy==2.2.6
+scikit-learn==1.7.2
+scipy==1.15.3
+joblib==1.5.3
+pyarrow==22.0.0
+
+# Text preprocessing
+nltk==3.9.4
+contractions==0.1.73
+
+# Transformer benchmark (M2)
+torch==2.10.0
+transformers==4.52.2
+datasets==3.6.0
+
+# Experiment tracking
+mlflow==3.14.0
+
+# Explainability
+shap==0.46.0
+
+# API (M2)
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+pydantic==2.10.4
+pydantic-settings==2.7.1
+
+# App (M3)
+streamlit==1.41.1
+
+# Testing
+pytest==8.3.4
+pytest-cov==6.0.0
+httpx==0.28.1
+
+# Utilities
+python-dotenv==1.0.1
