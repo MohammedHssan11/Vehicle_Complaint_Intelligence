@@ -3,6 +3,7 @@ from __future__ import annotations
 import pandas as pd
 import streamlit as st
 
+from theme import hero_header, inject_global_css, section_label
 from utils import (
     get_service,
     load_latest_baseline_artifacts,
@@ -12,7 +13,8 @@ from utils import (
 )
 
 st.set_page_config(page_title="Model Metrics", page_icon="📊", layout="wide")
-st.title("📊 Model Metrics")
+inject_global_css()
+hero_header("Model metrics", "Full benchmark breakdown across every backend, honestly scored.")
 
 
 def _render_multi_label_table(metadata: dict) -> None:
@@ -39,7 +41,7 @@ def _render_multi_label_table(metadata: dict) -> None:
 metadata = load_production_metadata()
 artifacts = load_latest_baseline_artifacts()
 
-st.subheader("Production model (baseline)")
+section_label("Production model (baseline)")
 if metadata:
     test_metrics = metadata["test_metrics"]
     c1, c2, c3, c4, c5 = st.columns(5)
@@ -66,18 +68,21 @@ if artifacts.get("metrics"):
     )
 
 if "classification_report" in artifacts:
-    st.subheader("Per-class classification report (held-out test set)")
+    st.divider()
+    section_label("Per-class classification report (held-out test set)")
     st.code(artifacts["classification_report"], language=None)
 
 if "confusion_matrix" in artifacts:
-    st.subheader("Confusion matrix")
+    st.divider()
+    section_label("Confusion matrix")
     st.dataframe(
-        artifacts["confusion_matrix"].style.background_gradient(cmap="Blues", axis=None),
+        artifacts["confusion_matrix"].style.background_gradient(cmap="viridis", axis=None),
         width='stretch',
     )
 
 if "most_confused_pairs" in artifacts:
-    st.subheader("Most confused label pairs")
+    st.divider()
+    section_label("Most confused label pairs")
     st.caption("Where the model's errors cluster — genuine semantic overlap (e.g. ENGINE vs POWER TRAIN), not label-taxonomy artifacts.")
     st.dataframe(artifacts["most_confused_pairs"], width='stretch', hide_index=True)
 
@@ -85,7 +90,7 @@ transformer_metadata = load_transformer_metadata()
 if transformer_metadata:
     st.divider()
     transformer_name = transformer_display_name(transformer_metadata)
-    st.subheader(f"{transformer_name} benchmark")
+    section_label(f"{transformer_name} benchmark")
     if transformer_metadata.get("is_full_dataset_run"):
         latency_note = ""
         if artifacts.get("metrics") and transformer_metadata.get("inference_latency_ms_per_sample"):
@@ -123,7 +128,7 @@ if transformer_metadata:
     _render_multi_label_table(transformer_metadata)
 
 st.divider()
-st.subheader("Live serving metrics (this app process)")
+section_label("Live serving metrics (this app process)")
 service = get_service("baseline")
 live_metrics = service.get_metrics()
 c1, c2, c3 = st.columns(3)

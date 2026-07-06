@@ -2,13 +2,15 @@ from __future__ import annotations
 
 import streamlit as st
 
+from theme import hero_header, inject_global_css
 from utils import get_service
 
 st.set_page_config(page_title="Examples", page_icon="🧪", layout="wide")
-st.title("🧪 Examples")
-st.caption(
+inject_global_css()
+hero_header(
+    "Examples",
     "Real complaints sampled from the held-out test split (never used for training), "
-    "with the model's prediction shown next to the true label."
+    "with the model's prediction shown next to the true label.",
 )
 
 n = st.slider("Number of examples", min_value=5, max_value=50, value=10)

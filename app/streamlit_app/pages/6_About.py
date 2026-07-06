@@ -2,17 +2,14 @@ from __future__ import annotations
 
 import streamlit as st
 
+from theme import hero_header, inject_global_css
+
 st.set_page_config(page_title="About", page_icon="ℹ️", layout="wide")
-st.title("ℹ️ About")
+inject_global_css()
+hero_header("About", "The full story — data, redesign decisions, and architecture.")
 
 st.markdown(
     """
-## Vehicle Complaint Classification
-
-An NLP system that predicts the NHTSA fault-category taxonomy from free-text
-vehicle complaint descriptions, rebuilt from an academic notebook into a
-production ML pipeline.
-
 ### Data
 
 271,517 real complaint records from the NHTSA public complaints database

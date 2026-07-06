@@ -5,11 +5,12 @@ import streamlit as st
 
 from charts import confidence_gauge, explanation_bar_chart, top_k_bar_chart
 from src.inference.predictor import InvalidInputError
+from theme import hero_header, inject_global_css, section_label
 from utils import get_service, load_transformer_metadata, transformer_display_name
 
 st.set_page_config(page_title="Single Prediction", page_icon="🔍", layout="wide")
-st.title("🔍 Single Prediction")
-st.caption("Classify a single vehicle complaint description and see the model's confidence and reasoning.")
+inject_global_css()
+hero_header("Single prediction", "Classify a complaint description and see the model's confidence and reasoning.")
 
 transformer_metadata = load_transformer_metadata()
 backend_options = ["baseline"]
@@ -62,7 +63,7 @@ if submitted:
                 st.caption(f"Model: `{result.model_backend}` · Latency: {result.latency_ms:.1f} ms")
 
             with top3_col:
-                st.markdown("**Top 3 categories**")
+                section_label("Top 3 categories")
                 st.plotly_chart(
                     top_k_bar_chart(result.top_k), width="stretch", config={"displayModeBar": False}
                 )

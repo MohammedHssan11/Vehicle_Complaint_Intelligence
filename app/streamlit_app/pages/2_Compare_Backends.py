@@ -4,13 +4,15 @@ import streamlit as st
 
 from charts import confidence_gauge, top_k_bar_chart
 from src.inference.predictor import InvalidInputError
+from theme import hero_header, inject_global_css
 from utils import get_service, load_production_metadata, load_transformer_metadata, transformer_display_name
 
 st.set_page_config(page_title="Compare Backends", page_icon="⚖️", layout="wide")
-st.title("⚖️ Compare Backends")
-st.caption(
-    "Run the same complaint through both model backends side by side — demonstrates the "
-    "config-swappable serving architecture (`src/inference/predictor.py`), not just a claim in the docs."
+inject_global_css()
+hero_header(
+    "Compare backends",
+    "Run the same complaint through both model backends side by side — the config-swappable "
+    "serving architecture (`src/inference/predictor.py`), demonstrated live, not just claimed in the docs.",
 )
 
 baseline_meta = load_production_metadata()

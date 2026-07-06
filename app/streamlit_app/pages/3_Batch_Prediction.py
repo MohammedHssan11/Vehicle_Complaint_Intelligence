@@ -3,10 +3,12 @@ from __future__ import annotations
 import pandas as pd
 import streamlit as st
 
+from theme import hero_header, inject_global_css, section_label
 from utils import get_service
 
 st.set_page_config(page_title="Batch Prediction", page_icon="📄", layout="wide")
-st.title("📄 Batch Prediction")
+inject_global_css()
+hero_header("Batch prediction", "Classify many complaints at once — upload a CSV or paste text directly.")
 
 MAX_ROWS = 500
 
@@ -53,10 +55,11 @@ if st.button("Run batch prediction", type="primary", disabled=not texts):
         rows.append(row)
 
     results_df = pd.DataFrame(rows)
-    st.subheader("Results")
+    st.divider()
+    section_label("Results")
     st.dataframe(results_df, width='stretch', hide_index=True)
 
-    st.subheader("Predicted category distribution")
+    section_label("Predicted category distribution")
     st.bar_chart(results_df["predicted_label"].value_counts())
 
     st.download_button(
