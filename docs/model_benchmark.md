@@ -53,6 +53,23 @@ The gap is ~9 points **for every backend**, model-independent — strong evidenc
 
 Practical takeaway: if the goal is a materially higher accuracy number, the highest-leverage lever is **not** a bigger model — it's reformulating the task as true multi-label prediction (score against the full component set) and deciding how to handle `UNKNOWN OR OTHER` (arguably shouldn't be a scored target class at all, since it has no distinguishing textual signal by construction). The genuine "model could do better" headroom, isolated from those effects, is closer to 3 points than 20.
 
+### v2 scoping step: evaluating existing models as multi-label predictors (no retraining)
+
+Before committing to a full multi-label retrain (new sigmoid training objective, new API/UI shape, explainability that doesn't extend the same way), `src/evaluation/multi_label_metrics.py` answers a cheaper question first: **how well would the current single-label models already do if their top-k output were treated as a multi-label prediction set?** No retraining — just scoring the existing top-k probabilities against the full listed component set instead of just the primary one.
+
+| Backend | k | Recall@k (avg. true labels captured) | Full coverage@k (all true labels captured) | Precision@k |
+|---|---|---|---|---|
+| Baseline | 1 | 0.588 | 0.477 | 0.731 |
+| Baseline | 3 | 0.820 | **0.711** | 0.367 |
+| DeBERTa-v3-base | 1 | 0.622 | 0.507 | 0.770 |
+| DeBERTa-v3-base | 3 | 0.853 | **0.748** | 0.382 |
+
+(Precision@k=1 equals `lenient_accuracy` above, as expected — same quantity, different framing.)
+
+The standout number: DeBERTa-v3-base's existing top-3 output, scored as a multi-label answer, achieves **74.8% full coverage** — i.e. for three out of four complaints, all of the truly listed components are somewhere in its top-3 — using the exact same model already in `models/transformer/`, zero retraining. That's a meaningfully stronger, more honest answer than either the 67.9% strict accuracy or the 77.1%/83.3%/86.4% credited-error breakdown above, and it's the strongest evidence yet that a genuine multi-label retrain (learning a calibrated per-label threshold instead of a fixed top-3 cutoff) is likely to pay off — this is the recommended next validation step before committing to that larger engineering lift.
+
+Precision@k is low by construction (most complaints only have 1-2 true labels, but k=3 always spends 3 guesses) — not a flaw, just the honest cost of using a fixed k instead of a model that decides its own answer-set size per input, which is exactly what a real multi-label classifier would do better.
+
 ## Which one is `models/production/`?
 
 Still the baseline, for now — switching the default `SERVING_MODEL_BACKEND` to `transformer` trades a real accuracy gain for a >1000x latency increase and the complete loss of word-level explainability (SHAP explanations only exist for the linear baseline; see below). That's a product decision, not a modeling one, so it's left as a config choice (`SERVING_MODEL_BACKEND=transformer` in `.env`, pointed at whichever transformer checkpoint is in `models/transformer/`) rather than silently switched.

@@ -27,6 +27,7 @@ from src.evaluation.metrics import (
     lenient_accuracy,
     majority_class_baseline_accuracy,
 )
+from src.evaluation.multi_label_metrics import multi_label_metrics_at_k
 from src.features.tfidf import FEATURIZER_REGISTRY
 from src.models.baseline import MODEL_REGISTRY
 
@@ -149,6 +150,14 @@ def train_and_select() -> dict:
     # task, so a prediction matching a listed-but-non-primary component
     # isn't really wrong — this metric quantifies how much of "error" is that.
     test_metrics["lenient_accuracy"] = lenient_accuracy(test["components"], y_test_pred)
+    # v2 scoping step (see docs/model_benchmark.md) — how well would the
+    # existing single-label model do if its top-k output were scored as a
+    # multi-label prediction set, with no retraining?
+    y_test_proba = best["model"].predict_proba(X_test)
+    multi_label_metrics = [
+        multi_label_metrics_at_k(test["components"], y_test_proba, best["model"].classes_, k=k)
+        for k in (1, 3)
+    ]
     report_text = get_classification_report(y_test, y_test_pred, labels=labels)
     confusion_df = get_confusion_matrix_df(y_test, y_test_pred, labels=labels)
     confused_pairs = most_confused_pairs(test[TEXT_COL], y_test, y_test_pred, top_n=20)
@@ -169,6 +178,7 @@ def train_and_select() -> dict:
                 "best_model": best["model_name"],
                 "val_metrics": best["val_metrics"],
                 "test_metrics": test_metrics,
+                "multi_label_metrics": multi_label_metrics,
                 "majority_class_baseline_accuracy": baseline_acc,
                 "train_time_seconds": best["train_time_seconds"],
                 "inference_latency_ms_per_sample": best["inference_latency_ms_per_sample"],
@@ -191,6 +201,7 @@ def train_and_select() -> dict:
                 "classes": sorted(best["model"].classes_.tolist()),
                 "test_metrics": test_metrics,
                 "val_metrics": best["val_metrics"],
+                "multi_label_metrics": multi_label_metrics,
             },
             indent=2,
         )

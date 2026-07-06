@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import pandas as pd
 import streamlit as st
 
 from utils import (
@@ -12,6 +13,28 @@ from utils import (
 
 st.set_page_config(page_title="Model Metrics", page_icon="📊", layout="wide")
 st.title("📊 Model Metrics")
+
+
+def _render_multi_label_table(metadata: dict) -> None:
+    """v2 scoping step: scores this model's existing top-k output as a
+    multi-label prediction against the full listed component set, with no
+    retraining. See docs/model_benchmark.md's "v2 scoping step" section."""
+    rows = metadata.get("multi_label_metrics")
+    if not rows:
+        return
+    st.caption(
+        "**If we treated the top-k output as a multi-label answer instead of picking one** "
+        "(no retraining — same model, different scoring):"
+    )
+    df = pd.DataFrame(rows).rename(
+        columns={
+            "k": "k",
+            "recall_at_k": "Recall@k (avg. true labels captured)",
+            "full_coverage_at_k": "Full coverage@k (ALL true labels captured)",
+            "precision_at_k": "Precision@k",
+        }
+    )
+    st.dataframe(df.style.format({c: "{:.3f}" for c in df.columns if c != "k"}), width="stretch", hide_index=True)
 
 metadata = load_production_metadata()
 artifacts = load_latest_baseline_artifacts()
@@ -32,6 +55,7 @@ if metadata:
             "first-listed one used for training/scoring — see docs/model_benchmark.md's "
             "\"honest evaluation\" section.",
         )
+    _render_multi_label_table(metadata)
 
 if artifacts.get("metrics"):
     m = artifacts["metrics"]
@@ -96,6 +120,7 @@ if transformer_metadata:
             "first-listed one used for training/scoring — see docs/model_benchmark.md's "
             "\"honest evaluation\" section.",
         )
+    _render_multi_label_table(transformer_metadata)
 
 st.divider()
 st.subheader("Live serving metrics (this app process)")

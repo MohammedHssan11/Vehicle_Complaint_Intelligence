@@ -67,6 +67,7 @@ from transformers import DataCollatorWithPadding, EarlyStoppingCallback, Trainer
 
 from src.config.settings import label_config, paths
 from src.evaluation.metrics import compute_metrics, get_classification_report, lenient_accuracy
+from src.evaluation.multi_label_metrics import multi_label_metrics_at_k
 from src.models.transformer import DEFAULT_MAX_LENGTH, TransformerClassifier
 from src.preprocessing.text_cleaning import preprocess_for_transformer
 
@@ -261,6 +262,14 @@ def train_transformer_benchmark() -> dict:
     # See docs/model_benchmark.md's "honest evaluation" section — quantifies
     # how much "error" is really just predicting a non-primary listed component.
     test_metrics["lenient_accuracy"] = lenient_accuracy(test_df["components"], y_test_pred)
+    # v2 scoping step (see docs/model_benchmark.md) — how well would this
+    # single-label model do if its top-k output were scored as a multi-label
+    # prediction set, with no retraining?
+    y_test_proba = clf.predict_proba(sample_texts, batch_size=32)
+    multi_label_metrics = [
+        multi_label_metrics_at_k(test_df["components"], y_test_proba, clf.classes_, k=k)
+        for k in (1, 3)
+    ]
     report_text = get_classification_report(y_test_true, y_test_pred, labels=labels_sorted)
     logger.info("Transformer test metrics: %s", test_metrics)
 
@@ -286,6 +295,7 @@ def train_transformer_benchmark() -> dict:
                 "n_parameters": n_params,
                 "model_memory_mb": model_memory_mb,
                 "test_metrics": test_metrics,
+                "multi_label_metrics": multi_label_metrics,
                 "is_full_dataset_run": is_full_run,
                 "note": (
                     f"Trained on the full training set on {device.upper()}."
@@ -317,6 +327,7 @@ def train_transformer_benchmark() -> dict:
                     "trained_at": run_id,
                     "classes": labels_sorted,
                     "test_metrics": test_metrics,
+                    "multi_label_metrics": multi_label_metrics,
                     "is_full_dataset_run": is_full_run,
                     "n_train_examples": len(train_df),
                     "device": device,
