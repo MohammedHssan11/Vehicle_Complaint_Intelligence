@@ -65,9 +65,17 @@ class FeatureConfig:
     TFIDF_NGRAM_RANGE = (1, 2)
     TFIDF_MIN_DF = 3
 
+    # Char n-grams catch misspellings word n-grams miss outright — the text
+    # audit found ~46% of the vocabulary is hapax legomena, much of it typos
+    # ("burnig", "misalligned", "sewrious"). Combined with word n-grams via
+    # CombinedTfidfFeaturizer as a second candidate in the model bake-off.
+    CHAR_NGRAM_RANGE = (3, 5)
+    CHAR_MAX_FEATURES = 20000
+    CHAR_MIN_DF = 3
+
 
 class ModelConfig:
-    BASELINE_MODELS = ("logistic_regression", "linear_svc")
+    BASELINE_MODELS = ("logistic_regression", "linear_svc", "xgboost")
     RANDOM_STATE = 42
 
 

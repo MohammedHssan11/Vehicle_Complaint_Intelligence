@@ -48,3 +48,22 @@ def majority_class_baseline_accuracy(y_true) -> float:
     the floor any real model must clear."""
     counts = pd.Series(y_true).value_counts()
     return counts.iloc[0] / counts.sum()
+
+
+def lenient_accuracy(components_raw: pd.Series, y_pred) -> float:
+    """Fraction of predictions matching ANY listed component, not just the
+    primary (first-listed) one used as the training/scoring label.
+
+    `components` is a genuinely multi-label field (e.g. "POWER TRAIN,ENGINE")
+    collapsed to primary-only for this task. A prediction matching a listed
+    but non-primary component isn't really wrong — it's scored as an error
+    only because of that collapse. See docs/model_benchmark.md's "honest
+    evaluation" section for the full analysis (this metric alone accounted
+    for ~9 points of "error" on the DeBERTa-v3-base run)."""
+    components_raw = pd.Series(components_raw).reset_index(drop=True)
+    y_pred = pd.Series(y_pred).reset_index(drop=True)
+    matches = [
+        pred in {p.strip() for p in components.split(",")}
+        for components, pred in zip(components_raw, y_pred)
+    ]
+    return sum(matches) / len(matches)

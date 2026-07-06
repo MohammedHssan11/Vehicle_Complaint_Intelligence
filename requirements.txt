@@ -10,28 +10,31 @@ nltk==3.9.4
 contractions==0.1.73
 
 # Transformer benchmark (M2)
-torch==2.10.0
-transformers==4.52.2
-datasets==3.6.0
+# CUDA build (cu124) — install via: pip install torch --index-url https://download.pytorch.org/whl/cu124
+# Falls back fine to CPU-only torch on machines without a CUDA GPU.
+torch==2.6.0+cu124
+transformers==4.57.3
+datasets==4.6.1
 
 # Experiment tracking
 mlflow==3.14.0
 
 # Explainability
-shap==0.46.0
+shap==0.49.1
 
 # API (M2)
-fastapi==0.115.6
-uvicorn[standard]==0.34.0
-pydantic==2.10.4
-pydantic-settings==2.7.1
+fastapi==0.128.0
+uvicorn[standard]==0.40.0
+pydantic==2.12.5
+pydantic-settings==2.12.0
 
 # App (M3)
-streamlit==1.41.1
+streamlit==1.52.2
+plotly==6.7.0
 
 # Testing
-pytest==8.3.4
-pytest-cov==6.0.0
+pytest==9.0.2
+pytest-cov==7.1.0
 httpx==0.28.1
 
 # Utilities

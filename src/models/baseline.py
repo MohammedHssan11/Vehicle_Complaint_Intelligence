@@ -75,7 +75,14 @@ class LinearSVCClassifier(BaseClassifier):
         return self.model.classes_
 
 
+def _lazy_xgboost_classifier(**kwargs):
+    from src.models.xgboost_model import XGBoostClassifier  # heavy import (xgboost), load lazily
+
+    return XGBoostClassifier(**kwargs)
+
+
 MODEL_REGISTRY = {
     "logistic_regression": LogisticRegressionClassifier,
     "linear_svc": LinearSVCClassifier,
+    "xgboost": _lazy_xgboost_classifier,
 }

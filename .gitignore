@@ -48,3 +48,6 @@ Thumbs.db
 .pytest_cache/
 .coverage
 htmlcov/
+
+# Claude Code runtime state (session-specific, not project config)
+.claude/scheduled_tasks.lock
