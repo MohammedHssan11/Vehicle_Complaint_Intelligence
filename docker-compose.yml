@@ -1,0 +1,46 @@
+services:
+  api:
+    build: .
+    image: vehicle-complaint-classifier:latest
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data/processed:/app/data/processed
+      - ./artifacts:/app/artifacts
+      - ./models:/app/models
+      - ./logs:/app/logs
+      - ./experiments:/app/experiments
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      - MLFLOW_TRACKING_URI=sqlite:////app/experiments/mlflow.db
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    restart: unless-stopped
+
+  streamlit:
+    build: .
+    image: vehicle-complaint-classifier:latest
+    command: ["streamlit", "run", "app/streamlit_app/Home.py", "--server.address", "0.0.0.0", "--server.port", "8501"]
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./data/processed:/app/data/processed
+      - ./artifacts:/app/artifacts
+      - ./models:/app/models
+      - ./logs:/app/logs
+      - ./experiments:/app/experiments
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      - MLFLOW_TRACKING_URI=sqlite:////app/experiments/mlflow.db
+    depends_on:
+      - api
+    restart: unless-stopped
