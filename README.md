@@ -2,6 +2,8 @@
 
 Production ML system that classifies NHTSA vehicle complaint descriptions into fault categories (`ENGINE`, `SERVICE BRAKES`, `AIR BAGS`, etc.) using NLP. Rebuilt from a single academic notebook into a modular, tested, Docker-deployable pipeline — see [docs/Architecture.md](docs/Architecture.md) for the full audit and redesign rationale.
 
+![Architecture diagram](docs/architecture-diagram.svg)
+
 ## Results
 
 Three model backends, all trained on the full 188,056 real NHTSA complaints and evaluated on the same 40,298-row held-out test set (majority-class baseline: 0.160 accuracy):
